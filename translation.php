@@ -16,9 +16,11 @@ function loadLocaleMap($filePath)
     return $localeMap;
 }
 
+$localeMap = loadLocaleMap(__DIR__ . '/localeMap.json');
+
 function getFlags($href = '/')
 {
-    $localeMap = loadLocaleMap(__DIR__ . '/localeMap.json');
+    global $localeMap;
 
     // Default English entry
     echo('<a class="dropdown-item" href="' . $href . '">
@@ -35,18 +37,11 @@ function getFlags($href = '/')
     }
 }
 
-
-function getLangParam(): string {
-    if (empty($_GET['lang'])) {
-        return 'en';
-    }
-    $lang = preg_replace('/[^a-zA-Z0-9_-]/', '', $_GET['lang']);
-    return $lang !== '' ? $lang : 'en';
-}
-
-$lang = getLangParam();
-$localeMap = loadLocaleMap(__DIR__ . '/localeMap.json');
+$lang = $_GET['lang'] ?? "en";
+$localeMapFlip = array_flip($localeMap);
 $locale = $localeMap[$lang] ?? $lang;
+$lang = $localeMapFlip[$locale] ?? "en";
+if ($lang == "en") $locale = "en";
 putenv("LC_ALL=$locale");
 setlocale(LC_ALL, $locale);
 bindtextdomain("homepage", "lang");
@@ -56,10 +51,3 @@ bind_textdomain_codeset("homepage", 'UTF-8');
 $flagcode = $locale;
 $langStr    = "?lang=" . urlencode($lang);
 $langattrib = "&lang=" . urlencode($lang);
-
-function getTranslatedDownloadLink() {
-    $lang = getLangParam();
-    echo "downloads.php?lang=" . urlencode($lang);
-}
-
-?>
